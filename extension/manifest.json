@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "JobApply AI",
+  "description": "Parse job descriptions and manage your profile.",
+  "version": "0.1.0",
+  "action": { "default_popup": "popup/dist/index.html" },
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/jdExtractor.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
