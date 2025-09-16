@@ -5,16 +5,35 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 
 type Profile = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone?: string;
-  address?: string;
-  education?: string;
-  experience?: string;
-  skills?: string;
-  linkedin?: string;
-  github?: string;
+  basics: {
+    firstName: string;
+    lastName: string;
+    email?: string | null;
+    phone?: string | null;
+    address?: string | null;
+    linkedin?: string | null;
+    github?: string | null;
+    website?: string | null;
+  };
+  education: Array<{
+    school: string;
+    degree?: string | null;
+    start?: string | null;
+    end?: string | null;
+  }>;
+  experience: Array<{
+    company: string;
+    title?: string | null;
+    start?: string | null;
+    end?: string | null;
+    bullets: string[];
+  }>;
+  projects: Array<{
+    name: string;
+    description?: string | null;
+    skills: string[];
+  }>;
+  skills: string[];
 };
 
 export function Onboarding() {
@@ -22,30 +41,79 @@ export function Onboarding() {
   const [subStep, setSubStep] = useState(0);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [profile, setProfile] = useState<Profile>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    address: "",
-    education: "",
-    experience: "",
-    skills: "",
-    linkedin: "",
-    github: "",
+    basics: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      address: "",
+      linkedin: "",
+      github: "",
+      website: "",
+    },
+    education: [],
+    experience: [],
+    projects: [],
+    skills: [],
   });
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!resumeFile) return;
-    // 🔗 TODO: send resumeFile to backend AI parser
-    // Mock extracted data for now
+    //dummy data to mock the profile
     setProfile({
-      firstName: "Jane",
-      lastName: "Doe",
-      email: "jane.doe@email.com",
-      phone: "123-456-7890",
-      linkedin: "https://linkedin.com/in/janedoe",
-      github: "https://github.com/janedoe",
+      basics: {
+        firstName: "John",
+        lastName: "Doe",
+        email: "",
+        phone: "",
+        address: "",
+        linkedin: "",
+        github: "",
+        website: "",
+      },
+      education: [
+        {
+          school: "University of Example",
+          degree: "B.Sc. in Computer Science",
+          start: "2018",
+          end: "2022",
+        },
+      ],
+      experience: [
+        {
+          company: "Tech Solutions Inc.",
+          title: "Software Engineer",
+          start: "2022-06",
+          end: "Present",
+          bullets: [
+            "Developed and maintained web applications using React and Node.js.",
+            "Collaborated with cross-functional teams to define project requirements.",
+          ],
+        },
+      ],
+      projects: [
+        {
+          name: "Personal Portfolio",
+          description: "A personal website to showcase my projects and skills.",
+          skills: ["React", "CSS", "JavaScript"],
+        },
+      ],
+      skills: ["JavaScript", "React", "Node.js", "CSS"],
     });
+    // const form = new FormData();
+    // form.append("file", resumeFile);
+    // const response = await fetch("http://localhost:8080/api/parse-resume", {
+    //   method: "POST",
+    //   body: form,
+    // });
+    // if (!response.ok) {
+    //   console.error("Failed to upload resume");
+    //   return;
+    // }
+    // const data = await response.json();
+    // if (data?.profile) {
+    //   setProfile(data.profile as Profile);
+    // }
     setStep(1);
     setSubStep(0);
   };
@@ -57,7 +125,7 @@ export function Onboarding() {
   };
 
   return (
-    <Card className="w-80 p-4">
+    <Card className="w-80 max-h-150 overflow-scroll p-4 ml-5">
       <CardHeader>
         <CardTitle className="text-lg font-semibold">
           {step === 0 && "Welcome to JobApply AI 🎉"}
@@ -74,13 +142,11 @@ export function Onboarding() {
               Upload your resume and we’ll automatically extract your details.
             </p>
             <div className="space-y-1.5">
-              <label
-                htmlFor="resume"
-                className="text-sm font-medium leading-none"
-              >
+              <label htmlFor="resume" className="text-sm font-medium">
                 Upload Resume
               </label>
               <Input
+                className="text-sm"
                 id="resume"
                 type="file"
                 accept=".pdf,.docx,.tex"
@@ -103,7 +169,7 @@ export function Onboarding() {
               <div className="text-sm font-medium">
                 {subStep === 0
                   ? "Basic Information"
-                  : "Education, Experience, Skills"}
+                  : "Education, Experience, Projects, Skills"}
               </div>
               <div
                 className="flex items-center gap-1.5"
@@ -125,18 +191,21 @@ export function Onboarding() {
             {subStep === 0 && (
               <>
                 <div className="space-y-1.5">
-                  <label
-                    htmlFor="firstName"
-                    className="text-sm font-medium leading-none"
-                  >
+                  <label htmlFor="firstName" className="text-sm font-medium">
                     First Name
                   </label>
                   <Input
                     id="firstName"
                     placeholder="First Name"
-                    value={profile.firstName}
+                    value={profile.basics.firstName}
                     onChange={(e) =>
-                      setProfile({ ...profile, firstName: e.target.value })
+                      setProfile({
+                        ...profile,
+                        basics: {
+                          ...profile.basics,
+                          firstName: e.target.value,
+                        },
+                      })
                     }
                   />
                 </div>
@@ -150,9 +219,12 @@ export function Onboarding() {
                   <Input
                     id="lastName"
                     placeholder="Last Name"
-                    value={profile.lastName}
+                    value={profile.basics.lastName}
                     onChange={(e) =>
-                      setProfile({ ...profile, lastName: e.target.value })
+                      setProfile({
+                        ...profile,
+                        basics: { ...profile.basics, lastName: e.target.value },
+                      })
                     }
                   />
                 </div>
@@ -167,9 +239,12 @@ export function Onboarding() {
                     id="email"
                     type="email"
                     placeholder="Email"
-                    value={profile.email}
+                    value={profile.basics.email ?? ""}
                     onChange={(e) =>
-                      setProfile({ ...profile, email: e.target.value })
+                      setProfile({
+                        ...profile,
+                        basics: { ...profile.basics, email: e.target.value },
+                      })
                     }
                   />
                 </div>
@@ -183,9 +258,12 @@ export function Onboarding() {
                   <Input
                     id="phone"
                     placeholder="Phone"
-                    value={profile.phone}
+                    value={profile.basics.phone ?? ""}
                     onChange={(e) =>
-                      setProfile({ ...profile, phone: e.target.value })
+                      setProfile({
+                        ...profile,
+                        basics: { ...profile.basics, phone: e.target.value },
+                      })
                     }
                   />
                 </div>
@@ -199,70 +277,32 @@ export function Onboarding() {
                   <Input
                     id="address"
                     placeholder="Address"
-                    value={profile.address}
+                    value={profile.basics.address ?? ""}
                     onChange={(e) =>
-                      setProfile({ ...profile, address: e.target.value })
+                      setProfile({
+                        ...profile,
+                        basics: { ...profile.basics, address: e.target.value },
+                      })
                     }
-                  />
-                </div>
-
-                <div className="flex gap-2 pt-1">
-                  <Button className="ml-auto" onClick={() => setSubStep(1)}>
-                    Next
-                  </Button>
-                </div>
-              </>
-            )}
-
-            {subStep === 1 && (
-              <>
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="education"
-                    className="text-sm font-medium leading-none"
-                  >
-                    Education
-                  </label>
-                  <textarea
-                    id="education"
-                    placeholder="Schools, degrees, years"
-                    value={profile.education}
-                    onChange={(e) =>
-                      setProfile({ ...profile, education: e.target.value })
-                    }
-                    className="min-h-20 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
                   />
                 </div>
                 <div className="space-y-1.5">
                   <label
-                    htmlFor="experience"
+                    htmlFor="website"
                     className="text-sm font-medium leading-none"
                   >
-                    Experience
-                  </label>
-                  <textarea
-                    id="experience"
-                    placeholder="Companies, roles, responsibilities"
-                    value={profile.experience}
-                    onChange={(e) =>
-                      setProfile({ ...profile, experience: e.target.value })
-                    }
-                    className="min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="skills"
-                    className="text-sm font-medium leading-none"
-                  >
-                    Skills
+                    Website
                   </label>
                   <Input
-                    id="skills"
-                    placeholder="e.g., JavaScript, React, Node.js"
-                    value={profile.skills}
+                    id="website"
+                    type="url"
+                    placeholder="Personal website URL"
+                    value={profile.basics.website ?? ""}
                     onChange={(e) =>
-                      setProfile({ ...profile, skills: e.target.value })
+                      setProfile({
+                        ...profile,
+                        basics: { ...profile.basics, website: e.target.value },
+                      })
                     }
                   />
                 </div>
@@ -278,9 +318,12 @@ export function Onboarding() {
                     id="linkedin"
                     type="url"
                     placeholder="LinkedIn profile URL"
-                    value={profile.linkedin}
+                    value={profile.basics.linkedin ?? ""}
                     onChange={(e) =>
-                      setProfile({ ...profile, linkedin: e.target.value })
+                      setProfile({
+                        ...profile,
+                        basics: { ...profile.basics, linkedin: e.target.value },
+                      })
                     }
                   />
                 </div>
@@ -295,9 +338,324 @@ export function Onboarding() {
                     id="github"
                     type="url"
                     placeholder="GitHub profile URL"
-                    value={profile.github}
+                    value={profile.basics.github ?? ""}
                     onChange={(e) =>
-                      setProfile({ ...profile, github: e.target.value })
+                      setProfile({
+                        ...profile,
+                        basics: { ...profile.basics, github: e.target.value },
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="flex gap-2 pt-1">
+                  <Button className="ml-auto" onClick={() => setSubStep(1)}>
+                    Next
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {subStep === 1 && (
+              <>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium leading-none">
+                      Education
+                    </label>
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        setProfile({
+                          ...profile,
+                          education: [
+                            ...profile.education,
+                            { school: "", degree: "", start: "", end: "" },
+                          ],
+                        })
+                      }
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  <div className="space-y-3">
+                    {profile.education.map((edu, idx) => (
+                      <div
+                        key={idx}
+                        className="rounded-md border p-2 space-y-2"
+                      >
+                        <Input
+                          placeholder="School"
+                          value={edu.school}
+                          onChange={(e) => {
+                            const next = [...profile.education];
+                            next[idx] = {
+                              ...next[idx],
+                              school: e.target.value,
+                            };
+                            setProfile({ ...profile, education: next });
+                          }}
+                        />
+                        <Input
+                          placeholder="Degree"
+                          value={edu.degree ?? ""}
+                          onChange={(e) => {
+                            const next = [...profile.education];
+                            next[idx] = {
+                              ...next[idx],
+                              degree: e.target.value,
+                            };
+                            setProfile({ ...profile, education: next });
+                          }}
+                        />
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Start (e.g., 2020)"
+                            value={edu.start ?? ""}
+                            onChange={(e) => {
+                              const next = [...profile.education];
+                              next[idx] = {
+                                ...next[idx],
+                                start: e.target.value,
+                              };
+                              setProfile({ ...profile, education: next });
+                            }}
+                          />
+                          <Input
+                            placeholder="End (e.g., 2024 or Present)"
+                            value={edu.end ?? ""}
+                            onChange={(e) => {
+                              const next = [...profile.education];
+                              next[idx] = { ...next[idx], end: e.target.value };
+                              setProfile({ ...profile, education: next });
+                            }}
+                          />
+                        </div>
+                        <div className="flex justify-end">
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              const next = profile.education.filter(
+                                (_, i) => i !== idx
+                              );
+                              setProfile({ ...profile, education: next });
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 pt-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium leading-none">
+                      Experience
+                    </label>
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        setProfile({
+                          ...profile,
+                          experience: [
+                            ...profile.experience,
+                            {
+                              company: "",
+                              title: "",
+                              start: "",
+                              end: "",
+                              bullets: [],
+                            },
+                          ],
+                        })
+                      }
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  <div className="space-y-3">
+                    {profile.experience.map((exp, idx) => (
+                      <div
+                        key={idx}
+                        className="rounded-md border p-2 space-y-2"
+                      >
+                        <Input
+                          placeholder="Company"
+                          value={exp.company}
+                          onChange={(e) => {
+                            const next = [...profile.experience];
+                            next[idx] = {
+                              ...next[idx],
+                              company: e.target.value,
+                            };
+                            setProfile({ ...profile, experience: next });
+                          }}
+                        />
+                        <Input
+                          placeholder="Title"
+                          value={exp.title ?? ""}
+                          onChange={(e) => {
+                            const next = [...profile.experience];
+                            next[idx] = { ...next[idx], title: e.target.value };
+                            setProfile({ ...profile, experience: next });
+                          }}
+                        />
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Start (e.g., 2021-01)"
+                            value={exp.start ?? ""}
+                            onChange={(e) => {
+                              const next = [...profile.experience];
+                              next[idx] = {
+                                ...next[idx],
+                                start: e.target.value,
+                              };
+                              setProfile({ ...profile, experience: next });
+                            }}
+                          />
+                          <Input
+                            placeholder="End (e.g., 2023-08 or Present)"
+                            value={exp.end ?? ""}
+                            onChange={(e) => {
+                              const next = [...profile.experience];
+                              next[idx] = { ...next[idx], end: e.target.value };
+                              setProfile({ ...profile, experience: next });
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground">
+                            Bullets (one per line)
+                          </label>
+                          <textarea
+                            placeholder="Accomplishment or responsibility per line"
+                            value={(exp.bullets ?? []).join("\n")}
+                            onChange={(e) => {
+                              const lines = e.target.value
+                                .split("\n")
+                                .map((s) => s.trim())
+                                .filter(Boolean);
+                              const next = [...profile.experience];
+                              next[idx] = { ...next[idx], bullets: lines };
+                              setProfile({ ...profile, experience: next });
+                            }}
+                            className="min-h-20 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                          />
+                        </div>
+                        <div className="flex justify-end">
+                          <Button
+                            onClick={() => {
+                              const next = profile.experience.filter(
+                                (_, i) => i !== idx
+                              );
+                              setProfile({ ...profile, experience: next });
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 pt-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium leading-none">
+                      Projects
+                    </label>
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        setProfile({
+                          ...profile,
+                          projects: [
+                            ...profile.projects,
+                            { name: "", description: "", skills: [] },
+                          ],
+                        })
+                      }
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  <div className="space-y-3">
+                    {profile.projects.map((proj, idx) => (
+                      <div
+                        key={idx}
+                        className="rounded-md border p-2 space-y-2"
+                      >
+                        <Input
+                          placeholder="Project name"
+                          value={proj.name}
+                          onChange={(e) => {
+                            const next = [...profile.projects];
+                            next[idx] = { ...next[idx], name: e.target.value };
+                            setProfile({ ...profile, projects: next });
+                          }}
+                        />
+                        <textarea
+                          placeholder="Short description"
+                          value={proj.description ?? ""}
+                          onChange={(e) => {
+                            const next = [...profile.projects];
+                            next[idx] = {
+                              ...next[idx],
+                              description: e.target.value,
+                            };
+                            setProfile({ ...profile, projects: next });
+                          }}
+                          className="min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                        />
+                        <Input
+                          placeholder="Skills (comma-separated)"
+                          value={(proj.skills ?? []).join(", ")}
+                          onChange={(e) => {
+                            const list = e.target.value
+                              .split(",")
+                              .map((s) => s.trim())
+                              .filter(Boolean);
+                            const next = [...profile.projects];
+                            next[idx] = { ...next[idx], skills: list };
+                            setProfile({ ...profile, projects: next });
+                          }}
+                        />
+                        <div className="flex justify-end">
+                          <Button
+                            variant="destructive"
+                            onClick={() => {
+                              const next = profile.projects.filter(
+                                (_, i) => i !== idx
+                              );
+                              setProfile({ ...profile, projects: next });
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 pt-2">
+                  <label className="text-sm font-medium leading-none">
+                    Skills
+                  </label>
+                  <Input
+                    id="skills"
+                    placeholder="e.g., JavaScript, React, Node.js"
+                    value={(profile.skills ?? []).join(", ")}
+                    onChange={(e) =>
+                      setProfile({
+                        ...profile,
+                        skills: e.target.value
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter(Boolean),
+                      })
                     }
                   />
                 </div>
